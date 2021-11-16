@@ -35,7 +35,7 @@ namespace Ship {
         void get_damage(int damage);
     };
 
-    class Transport_ship: public Ship {
+    class Transport_ship: public virtual Ship {
     private:
         int cargo[3] = {0};
         //max_cargo, cur_cargo, coef_decrease;
@@ -45,7 +45,7 @@ namespace Ship {
         int evalute_max_speed();
     };
 
-    class Security_ship: public Ship {
+    class Security_ship: public virtual Ship {
     private:
         Basic::Armament *armaments[4] = {nullptr};
         // Расположение орудий: корма, нос, правый борт, левый борт
