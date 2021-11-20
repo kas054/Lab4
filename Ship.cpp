@@ -70,9 +70,9 @@ namespace Ships{
         else armament->change_type(type);
     }
 
-    Basic::Armament &Security_ship::get_info_armament(int i) const{
+    Basic::Armament *Security_ship::get_info_armament(int i) const{
         if (i < 0 || i > 3) throw std::runtime_error("Invalid place for armament");
-        return *(armaments[i]);
+        return armaments[i];
     }
 
     void Security_ship::change_place(int old_place, int new_place){
@@ -146,5 +146,21 @@ namespace Ships{
         Armament *tmp_armament = armaments[first];
         armaments[first] = armaments[second];
         armaments[second] = tmp_armament;
+    }
+
+    Military_transport_ship::Military_transport_ship( std::string new_type, std::string name, double max_velocity,
+                                                      double max_life, double cost, double max_cargo, double coef_decrease):
+            Transport_ship( new_type, name, max_velocity,max_life, cost,max_cargo,coef_decrease){}
+
+
+    std::ostream &operator<<(std::ostream &s, const Military_transport_ship &ship){
+        ship.print_properties();
+        s << "Max cargo: " << ship.get_info_cargo(0) << " Current cargo: " << ship.get_info_cargo(1) << " Coefficient of decrease: " << ship.get_info_cargo(2) <<"\n";
+        s << "stern \t" << "bow \t" << "right board \t" << "left board \n";
+        for (int i = 0; i < 4; i ++){
+            if (ship.get_info_armament(i) != nullptr) s << (ship.get_info_armament(i))->get_type() << " \t";
+            else s << "---- \t";
+        }
+        return s;
     }
 }
