@@ -78,7 +78,7 @@ namespace Ships {
 
         void change_armament(int i, int property, double new_value, std::string type = ""); // номер оружия, свойство оружия, новое значение, тип оружия
 
-        Basic::Armament &get_info_armament(int i) const;
+        Basic::Armament *get_info_armament(int i) const;
 
         void change_place(int old_place, int new_place);
 
@@ -91,7 +91,15 @@ namespace Ships {
         void armament_exchange(int first, int second);
     };
 
-    class Military_transport_ship: public Security_ship, public Transport_ship {};
+    class Military_transport_ship: public Security_ship, public Transport_ship {
+    public:
+        Military_transport_ship() {}
+        Military_transport_ship(std::string new_type, std::string name, double max_velocity,
+                                 double max_life, double cost, double max_cargo, double coef_decrease);
+
+        friend std::ostream &operator<<(std::ostream &s, const Military_transport_ship &ship);
+
+    };
 }
 
 #endif //LAB4_3SEM_SHIP_H
