@@ -1,197 +1,172 @@
 //
 // Created by PC on 08.11.2021.
 //
+#include "Ship.h"
+#include <cmath>
+#include <utility>
 
-#include "Table.h"
-namespace Table {
-
-    Info::Info(const Info &inf) {
-        ship = inf.ship;
-        cur_place.x = (inf.cur_place).x;
-        cur_place.y = (inf.cur_place).y;
+namespace Ships{
+    using namespace Basic;
+    Ship::Ship(std::string new_type, std::string name, double max_velocity, double max_life, double cost) {
+        ship_type = std::move(new_type);
+        this->name = std::move(name);
+        properties[0] = max_velocity;
+        properties[2] = max_life;
+        properties[4] = cost;
     }
 
-    Info & Info::operator = (const Info &st){
-        if (this != &st){
-            ship = st.ship;
+    void Ship::set_velocity(double velocity){
+        if (velocity > this->get_property(0)) velocity = get_property(0); // properties[0] - max velocity
+        else if (velocity < 0) velocity = 0;
+        this->properties[1] = velocity; // properties[1] - current velocity
+    }
+
+    double Ship::get_property(int i) const {
+        double answer;
+        if (0 > i || i > count_properties() - 1) answer = 0;
+        else answer = properties[i];
+        return answer;
+    }
+
+    void Ship::print_properties() const{
+        std::cout << "\t\t Name of ship: " << get_name() << "\n";
+        std::cout << "\t\t Type of ship: " << get_type() << "\n";
+        std::cout << "\t\t Capitan: " << capitan << "\n";
+        std::cout <<"\t\t max velocity \t current velocity \t max life \t current life \t cost \n\t\t ";
+        for (int i = 0; i < count_properties(); i ++){
+            std::cout << properties[i] <<" \t ";
         }
-        return *this;
+        std::cout<<std::endl;
     }
 
-    Info & Info::operator =(Info &&st){
-        ship = st.ship;
-        return *this;
-    }
-
-    // копирующий конструктор Table<IND, INF>
-    template <class IND, class INF>
-    Table<IND, INF>::Table(const Table<IND, INF> &vector2) : current_size(vector2.current_size), max_size(vector2.max_size)
-    {
-        elements = new Table_element<IND, INF>[current_size];
-        for (int i = 0; i < current_size; i++)
-            elements[i] = vector2.elements[i];
-    }
-
-    // перемещающий консруктор Table<IND, INF>
-    template <class IND, class INF>
-    Table<IND, INF>::Table(Table<IND, INF> &&vector2) : current_size(vector2.current_size), max_size(vector2.max_size), elements(vector2.elements){
-        vector2.elements = nullptr;
-    }
-
-    // операторы присваивания
-    template <class IND, class INF>
-    Table<IND, INF> & Table<IND, INF>::operator = (const Table<IND, INF> &st){
-        if (this != &st){
-            current_size = st.current_size;
-            max_size = st.max_size;
-            delete[] elements;
-            elements = new Table_element<IND, INF>[max_size];
-            for (int i = 0; i < current_size; ++i)
-                elements[i] = st.vector[i];
-        }
-        return *this;
-    }
-
-    template <class IND, class INF>
-    Table<IND, INF> & Table<IND, INF>::operator =(Table<IND, INF> &&st)
-    {
-        int tmp = current_size;
-        current_size = st.current_size;
-        st.current_size = tmp;
-        tmp = max_size;
-        max_size = st.max_size;
-        st.max_size = tmp;
-        Table_element<IND, INF> *ptr = elements;
-        elements = st.elements;
-        st.elements = ptr;
-        return *this;
-    }
-
-    // метод get_pos
-    template <class IND, class INF>
-    int Table<IND, INF>::get_pos(const IND &s) const {
-        for (int i = 0; i < current_size; i ++)
-            if (elements[i].index == s)
-                return i;
-        return -1;
-    }
-
-    // метод [] (l-value)
-    template <class IND, class INF>
-    INF & Table<IND, INF>::operator[ ](const IND &s){
-        const char *error = "No such element";
-        int i = get_pos(s);
-        if (i < 0) throw error;
-        else return elements[i].info;
-    }
-
-    // метод [] (r-value)
-    template <class IND, class INF>
-    const INF & Table<IND, INF>::operator[ ](const IND &s) const{
-        int i = get_pos(s);
-        if (i < 0)
-            throw "No such element";
-        return elements[i].info;
-    }
-
-    // вывод Table<std::string string, Info>?
-    std::ostream & operator <<(std::ostream &s, const Table<std::string, Info> &tab){
-        Table<std::string, Info>::Iterator it;
-        for (it = tab.begin();it != tab.end(); ++it)
-            s << (*it).index << " - " << it->info << "\n";
+    std::ostream &operator<<(std::ostream &s, const Ships::Ship &ship){
+        ship.print_properties();
         return s;
     }
 
-    // удаление корабля
-    template <>
-    void Table<std::string, struct Info>::del_ship(const std::string &name) {
-        Table<std::string, struct Info>::Iterator it;
-        int i = get_pos(name);
-        if (i < 0) throw "No such element";
-        else{
-            delete ((elements[i]).info.ship);
-            elements[i] = elements[current_size-1];
-            current_size -=1;
+    Transport_ship::Transport_ship( std::string new_type, std::string name, double max_velocity,
+    double max_life, double cost, double max_cargo, double coef_decrease): Ship::Ship(new_type,name,max_velocity, max_life, cost){
+        cargo[0] = max_cargo;
+        cargo[2] = coef_decrease;
+    }
+
+    double Transport_ship::get_info_cargo(int i) const {
+        double answer;
+        if (0 > i || i > count_properties() - 1) answer = 0;
+        else answer = cargo[i];
+        return answer;
+    }
+
+    double Transport_ship::possible_speed(){ // максимально возможная скорость при текущей загрузке корабля
+        return (cargo[1] / cargo[0]) * get_property(0) * cargo[2];
+    }
+
+    void Transport_ship::set_cur_speed(double new_speed){
+        double m_pos_speed = possible_speed();
+        if (new_speed < 0 ) new_speed = 0;
+        else if (new_speed > m_pos_speed) new_speed = m_pos_speed;
+        Ship::set_velocity(new_speed);
+    }
+
+    void Security_ship::change_armament(int i, int property, double new_value, std::string type) {
+        // номер оружия, свойство оружия, новое значение, тип оружия
+        if (i < 0 || i > 3) throw std::runtime_error("Invalid place for armament");
+        Basic::Armament *armament = armaments[i];
+        if (type == "") armament->change_property(property, new_value);
+        else armament->change_type(type);
+    }
+
+    Basic::Armament *Security_ship::get_info_armament(int i) const{
+        if (i < 0 || i > 3) throw std::runtime_error("Invalid place for armament");
+        return armaments[i];
+    }
+
+    void Security_ship::change_place(int old_place, int new_place){
+
+        if (old_place < 0 || old_place > 3 ) throw std::runtime_error("Invalid place for old place");
+        else if (new_place < 0 || new_place > 3 ) throw std::runtime_error("Invalid place for new place");
+
+        if (armaments[old_place] == nullptr) throw std::runtime_error("No armament in this place");
+        if (armaments[new_place] != nullptr) throw std::runtime_error("This place is not free");
+
+        armaments[new_place] = armaments[old_place];
+        armaments[old_place] = nullptr;
+    }
+
+    void  Security_ship::add_armament(Armament &new_armament, int place){
+        if (armaments[place] == nullptr) armaments[place] = &new_armament;
+        else throw std::runtime_error("This place is not free");
+    }
+
+    double Security_ship::shoot(Coordinate cur_coord, Coordinate pirate){ // корабли ориентированы слева направо
+        // определить, может ли корабль выстрелить по данной точке: равны координаты по х или по у
+        double answer = 0;
+        double distance = std::sqrt(pow(cur_coord.x - pirate.x,2) + pow(cur_coord.y - pirate.y, 2));
+        Armament *cur_armament = nullptr;
+
+        if (cur_coord.x == pirate.x) { // выстрел из левого или правого борта
+            if (pirate.y > cur_coord.y) cur_armament = armaments[3]; // выстрел с левого борта
+            else cur_armament = armaments[2]; // выстрел с правого борта
         }
-    }
 
-    // получение описателя корабля по имени
-    template <>
-    Ships::Ship &Table<std::string, struct Info>::description_ship(const std::string &name) const{
-        struct Info get_info = (*this)[name];
-        return *(get_info.ship);
-    }
-
-    //добавить корабль
-    template <>
-    void Table<std::string, struct Info>::add_ship(Ships::Ship *new_ship, Basic::Coordinate coordinates){
-        typedef Table_element<std::string, struct Info>  Tab_elem;
-        struct Info new_info= {new_ship, coordinates};
-        Tab_elem new_elem = Tab_elem(new_ship->get_name(), new_info);
-
-        if (current_size == max_size) {
-            max_size += QUOTA;
-            Tab_elem *old = elements;
-            elements = new Tab_elem [max_size];
-            for (int i = 0; i < current_size; i ++) elements[i] = old[i];
-            delete [] old;
+        else if (cur_coord.y == pirate.y) { // выстрел с кормы или носа
+            if (pirate.x > cur_coord.x) cur_armament = armaments[1]; // выстрел с носа корабля
+            else cur_armament = armaments[0]; // выстрел с кормы корабля
         }
-        elements[current_size] = new_elem;
-        current_size += 1;
+
+        // определить, долетит ли снаряд
+        if (cur_armament != nullptr) // на выбранном месте расположено оружие
+            if (cur_armament->get_property(2) >= distance) // property[2] - range, property[6] - status
+                answer = cur_armament->shoot();
+        return answer;
     }
 
-    // методы итератора
-    template <class IND, class INF>
-    Iterator<IND, INF> Table<IND, INF>::begin( ) const {
-        return Iterator(this->elements);
+    void Security_ship::change_status(){
+        for (int i = 0; i < 4; i ++)
+            if (armaments[i] != nullptr) armaments[i]->change_status();
     }
 
-    template <class IND, class INF>
-    Iterator<IND, INF> Table<IND, INF>::end( ) const{
-        return Iterator(this->elements + current_size);
+    std::ostream &operator<<(std::ostream &s, const Transport_ship &ship){
+        ship.print_properties();
+        s << "Max cargo: " << (ship.cargo)[0] << " Current cargo: " << (ship.cargo)[1] << " Coefficient of decrease: " << (ship.cargo)[2] <<"\n";
+        return s;
     }
 
-    template <class IND, class INF>
-    Iterator<IND, INF> Table<IND, INF>::find(const IND &s) const{
-        int i = getPos(s);
-        if(i < 0)
-            i = current_size;
-        return Iterator(this->elements + i);
+    std::ostream &operator<<(std::ostream &s, const Security_ship &ship){
+        ship.print_properties();
+        s << "stern \t" << "bow \t" << "right board \t" << "left board \n";
+        for (int i = 0; i < 4; i ++){
+            if ((ship.armaments)[i] != nullptr) s << (ship.armaments[i])->get_type() << " \t";
+            else s << "---- \t";
+        }
+        return s;
     }
 
-    //methods for Iterator
-    template <class IND, class INF>
-    int Iterator<IND, INF>::operator !=(const Iterator<IND, INF> &it) const{
-        return cur != it.cur;
+    void Security_ship::armament_exchange(int first, int second){
+        if (first < 0 || first > 3 ) throw std::runtime_error("Invalid place for first place");
+        else if (second < 0 || second > 3 ) throw std::runtime_error("Invalid place for second place");
+
+        if (armaments[first] == nullptr) throw std::runtime_error("No armament in this place");
+        if (armaments[second] == nullptr) throw std::runtime_error("No armament in this place");
+
+        Armament *tmp_armament = armaments[first];
+        armaments[first] = armaments[second];
+        armaments[second] = tmp_armament;
     }
 
-    template <class IND, class INF>
-    int Iterator<IND, INF>::operator ==(const Iterator<IND, INF> &it) const{
-        return cur == it.cur;
-    }
+    Military_transport_ship::Military_transport_ship( std::string new_type, std::string name, double max_velocity,
+                                                      double max_life, double cost, double max_cargo, double coef_decrease):
+            Transport_ship( new_type, name, max_velocity,max_life, cost,max_cargo,coef_decrease){}
 
-    template <class IND, class INF>
-    Table_element<IND, INF> & Iterator<IND, INF>::operator *( ){
-        return *cur;
-    }
 
-    template <class IND, class INF>
-    Table_element<IND, INF>* Iterator<IND, INF>::operator ->( ){
-        return cur;
+    std::ostream &operator<<(std::ostream &s, const Military_transport_ship &ship){
+        ship.print_properties();
+        s << "Max cargo: " << ship.get_info_cargo(0) << " Current cargo: " << ship.get_info_cargo(1) << " Coefficient of decrease: " << ship.get_info_cargo(2) <<"\n";
+        s << "stern \t" << "bow \t" << "right board \t" << "left board \n";
+        for (int i = 0; i < 4; i ++){
+            if (ship.get_info_armament(i) != nullptr) s << (ship.get_info_armament(i))->get_type() << " \t";
+            else s << "---- \t";
+        }
+        return s;
     }
-
-    template <class IND, class INF>
-    Iterator<IND, INF> & Iterator<IND, INF>::operator ++( ){
-        ++cur;
-        return *this;
-    }
-
-    template <class IND, class INF>
-    Iterator<IND, INF> Iterator<IND, INF>::operator ++(int)
-   {
-        Iterator<IND, INF> result(*this);
-        ++cur;
-        return result;
-    }
-
 }
