@@ -15,9 +15,16 @@ namespace Table {
         Info(Ships::Ship *s, Basic::Coordinate p): ship(s), cur_place(p) {}
         Info(const Info &inf);
 
+        Info &operator=(const Info &);
+
+        Info &operator=(Info &&);
+
         ~Info() {delete ship;}
 
-        void print(){ std::cout << *ship << "\n" << cur_place <<std::endl;}
+        friend std::ostream & operator <<(std::ostream &s, const Info &inf) {
+            std::cout << inf.ship << "\n" << inf.cur_place <<std::endl;
+            return s;
+        }
     };
 
     template <class IND, class INF>
@@ -69,18 +76,19 @@ namespace Table {
         INF &operator[](const IND &); // l-value
         const INF &operator[](const IND &) const; // r -value
         // вывод
-        friend std::ostream & operator <<(std::ostream &, const Table<IND, INF> &);
+        template <class Id, class If>
+        friend std::ostream & operator <<(std::ostream &, const Table<Id,If> &);
         // объявления для итератора
         typedef Iterator<IND, INF> Iterator;
         // методы итератора
-        Iterator begin();
-        Iterator end();
+        Iterator begin() const;
+        Iterator end() const;
         Iterator find(const IND &) const;
         // методы таблицы
         int get_count() const { return current_size; };
-        void del_ship(int i);
+        void del_ship(const std::string &);
         void add_ship(Ships::Ship *new_ship, Basic::Coordinate coordinates);
-        Ships::Ship &description_ship(std::string name) const;
+        Ships::Ship &description_ship(const std::string  &) const;
 
     };
     /*Table <Ships::Ship> a;
