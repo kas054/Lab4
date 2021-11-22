@@ -5,86 +5,90 @@
 #ifndef LAB4_3SEM_TABLE_H
 #define LAB4_3SEM_TABLE_H
 #include "Ship.h"
-namespace Menu {
-    template <class S>
-    struct Table_element{
-        S ship;
-        std::string name;
+namespace Table {
+
+    struct Info{
+        Ships::Ship *ship;
         Basic::Coordinate cur_place;
+
+        Info(): ship(nullptr), cur_place({0,0}){}
+        Info(Ships::Ship *s, Basic::Coordinate p): ship(s), cur_place(p) {}
+        Info(const Info &inf);
+
+        ~Info() {delete ship;}
+
+        void print(){ std::cout << *ship << "\n" << cur_place <<std::endl;}
     };
 
-    template <class S>
+    template <class IND, class INF>
+    struct Table_element{
+        IND index; // std::string
+        INF info; // struct Info
+        Table_element(): index(""), info(INF()) {}
+        Table_element(const IND &name, const INF &inf): index(name), info(inf) {}
+    };
+
+    template <class IND, class INF>
+    class Iterator{
+    private:
+        Table_element<IND, INF> *cur; // текущий элемент массива
+    public:
+        // конструкторы
+        Iterator(): cur(nullptr){}
+        Iterator(Table_element<IND, INF> *a): cur(a){}
+        // операторы сравнения
+        int operator !=(const Iterator<IND, INF> &) const;
+        int operator ==(const Iterator<IND, INF> &) const;
+        // доступ к элементам массива по указателю
+        Table_element<IND, INF> & operator *();
+        Table_element<IND, INF> * operator ->();
+        // перемещение итератора на следующую позицию в массиве
+        Iterator<IND, INF> & operator ++(); // префиксный
+        Iterator<IND, INF> operator ++(int); // постфиксный
+    };
+
+    template <class IND, class INF>
     class Table {
+        friend class Iterator<IND, INF>;
     private:
         static const int QUOTA = 10;
-        int max_size; // максимальный размер вектора
-        int current_size;
-        Table_element <Ships::Ship> **ships;
+        int max_size, current_size;
+        Table_element<IND, INF> *elements;
+        int get_pos(const IND &) const;
     public:
-        Table(): current_size(0), ships(new Table_element <Ships::Ship> *[QUOTA]), max_size(QUOTA) {};
-        Table(int size, S *array_of_new_ships, std::string *names, Basic::Coordinate *places);
-
-        Table(const Table &); // копирующий конструктор
-        Table(Table &&); // перемещающий конструктор
-        Table &operator =(const Table &);
-        Table &operator =(Table &&);
-        ~Table() { delete[] ships; };
-
+        // конструкторы
+        Table(): current_size(0), elements(new Table_element<IND, INF>[QUOTA]), max_size(QUOTA) {}; // пустой
+        Table(const Table<IND, INF> &); // копирующий конструктор
+        Table(Table<IND, INF> &&); // перемещающий конструктор
+        // деструктор
+        ~Table() {delete [] elements;}
+        // операторы присваивания
+        Table<IND, INF> &operator =(const Table<IND, INF> &);
+        Table<IND, INF> &operator =(Table<IND, INF> &&);
+        // операторы индексирования
+        INF &operator[](const IND &); // l-value
+        const INF &operator[](const IND &) const; // r -value
+        // вывод
+        friend std::ostream & operator <<(std::ostream &, const Table<IND, INF> &);
+        // объявления для итератора
+        typedef Iterator<IND, INF> Iterator;
+        // методы итератора
+        Iterator begin();
+        Iterator end();
+        Iterator find(const IND &) const;
+        // методы таблицы
         int get_count() const { return current_size; };
         void del_ship(int i);
-        void add_ship(S new_ship, Basic::Coordinate coordinates);
+        void add_ship(Ships::Ship *new_ship, Basic::Coordinate coordinates);
         Ships::Ship &description_ship(std::string name) const;
+
     };
+    /*Table <Ships::Ship> a;
 
-    template <class S>
-    class Mission{
-    private:
-        static const int QUOTA = 10;
-        int max_size; // максимальный размер вектора
-        int current_size;
+    Ships::Transport_ship *transport = new Ships::Transport_ship();
 
-        Basic::Capitan commander;
-        Table <Ships::Ship>  &convoy;
-        Table <Ships::Ship>  &pirates;
-        /* max_money, spend_money, full_cargo, min_cargo, lost_cargo,
-           delivered_cargo, max_count_ship_c, max_count_ship_p, size A, size B */
-        int properties[10] = {0};
-        Basic::Coordinate coordinates_A = {0,0};
-        Basic::Coordinate coordinates_B = {0,0};
-        Basic::Coordinate *coordinates_pirates;
-        // параметры появления пиратов?
-    public:
-        Mission(): current_size(0), coordinates_pirates(new Basic::Coordinate [QUOTA]), max_size(QUOTA) {};
-
-        Mission(const Mission &);
-        Mission(Mission &&);
-        Mission &operator =(const Mission &);
-        Mission &operator =(Mission &&);
-        ~Mission() { delete[] coordinates_pirates; };
-
-        double get_properties(int i) const; // i - номер характеристики
-        void set_properties(int i, int new_value);
-
-        Basic::Coordinate get_coord_A_B(int i) const; // i == 0: A, i == 1: B
-        void set_coord_A_B(int i, int x, int y);
-
-        void change_ship(int c_p, int table_index, int ship_property_index); //c_p == 0: конвой, c_p == 1: пираты
-        Ships::Ship &get_ship(int c_p, int table_index) const;
-
-        void buy_ship(std::string ship_type);
-        void sell_ship(int c_p, int table_index);
-        void del_ship(int c_p, int table_index);
-
-        void add_cargo(int table_index, int weight);
-        void aouto_cargo();
-
-        void buy_armament(int c_p, int table_index, int i, int property, int new_value, std::string type = "");
-        void sell_armament(int c_p, int table_index, int i);
-
-        Ships::Ship &create_pirate();
-    };
-
-
+    Ships::Ship ship = *transport;
+    Ships::Transport_ship *tmp = dynamic_cast<Ships::Transport_ship *>(&ship); */
 
 
 }
