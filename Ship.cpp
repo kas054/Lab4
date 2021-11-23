@@ -68,12 +68,20 @@ namespace Ships{
         Ship::set_velocity(new_speed);
     }
 
+    Security_ship:: ~Security_ship(){
+        for (int i = 0; i < 4; i ++)
+            delete armaments[i];
+    }
+
     void Security_ship::change_armament(int i, int property, double new_value, std::string type) {
         // номер оружия, свойство оружия, новое значение, тип оружия
-        if (i < 0 || i > 3) throw std::runtime_error("Invalid place for armament");
+        if (i < 0 || i > 3) throw "Invalid place for armament";
         Basic::Armament *armament = armaments[i];
-        if (type == "") armament->change_property(property, new_value);
-        else armament->change_type(type);
+        if (armament != nullptr) {
+            if (type == "") armament->change_property(property, new_value);
+            else armament->change_type(type);
+        }
+        else throw "No such armament";
     }
 
     Basic::Armament *Security_ship::get_info_armament(int i) const{
@@ -93,9 +101,9 @@ namespace Ships{
         armaments[old_place] = nullptr;
     }
 
-    void  Security_ship::add_armament(Armament &new_armament, int place){
-        if (armaments[place] == nullptr) armaments[place] = &new_armament;
-        else throw std::runtime_error("This place is not free");
+    void  Security_ship::add_armament(Armament *new_armament, int place){
+        if (armaments[place] == nullptr) armaments[place] = new_armament;
+        else throw "This place is not free";
     }
 
     double Security_ship::shoot(Coordinate cur_coord, Coordinate pirate){ // корабли ориентированы слева направо
