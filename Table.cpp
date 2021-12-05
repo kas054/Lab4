@@ -78,7 +78,7 @@ namespace Table {
 
     // метод [] (l-value)
     template <class IND, class INF>
-    INF & Table<IND, INF>::operator[ ](const IND &s){
+    INF & Table<IND, INF>::operator[](IND &s){
         const char *error = "No such element";
         int i = get_pos(s);
         if (i < 0) throw error;
@@ -87,7 +87,7 @@ namespace Table {
 
     // метод [] (r-value)
     template <class IND, class INF>
-    const INF & Table<IND, INF>::operator[ ](const IND &s) const{
+    const INF & Table<IND, INF>::operator[](const IND &s) const{
         int i = get_pos(s);
         if (i < 0)
             throw "No such element";
@@ -105,11 +105,11 @@ namespace Table {
     // удаление корабля
     template <>
     void Table<std::string, struct Info>::del_ship(const std::string &name) {
-        Table<std::string, struct Info>::Iterator it;
+        //Table<std::string, struct Info>::Iterator it;
         int i = get_pos(name);
         if (i < 0) throw "No such element";
         else{
-            delete ((elements[i]).info.ship);
+            delete &(elements[i]);
             elements[i] = elements[current_size-1];
             current_size -=1;
         }
@@ -117,17 +117,18 @@ namespace Table {
 
     // получение описателя корабля по имени
     template <>
-    Ships::Ship &Table<std::string, struct Info>::description_ship(const std::string &name) const{
+    Ships::Ship *Table<std::string, struct Info>::description_ship(const std::string &name) {
         struct Info get_info = (*this)[name];
-        return *(get_info.ship);
+        return get_info.ship;
     }
 
     //добавить корабль
     template <>
     void Table<std::string, struct Info>::add_ship(Ships::Ship *new_ship, Basic::Coordinate coordinates){
         typedef Table_element<std::string, struct Info>  Tab_elem;
-        struct Info new_info= {new_ship, coordinates};
-        Tab_elem new_elem = Tab_elem(new_ship->get_name(), new_info);
+
+        Info new_info= {new_ship, coordinates}; //
+        Tab_elem new_elem = {new_ship->get_name(), new_info};//
 
         if (current_size == max_size) {
             max_size += QUOTA;
