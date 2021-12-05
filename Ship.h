@@ -37,6 +37,8 @@ namespace Ships {
 
         void change_type(std::string new_type) { ship_type = std::move(new_type); }
 
+        void change_cap(Basic::Capitan new_cap) {capitan = new_cap;}
+
         void change_name(std::string new_name) { name = std::move(new_name); }
 
         void set_velocity(double velocity);
@@ -84,6 +86,8 @@ namespace Ships {
         Security_ship(std::string new_type, std::string name,double max_velocity, double max_life, double cost): Ship(new_type,name,max_velocity, max_life, cost) {}
 
         void add_armament(Basic::Armament *new_armament, int place);
+
+        void remove_armament(int place);
 
         void change_armament(int i, int property, double new_value, std::string type = ""); // номер оружия, свойство оружия, новое значение, тип оружия
 
