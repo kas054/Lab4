@@ -177,7 +177,8 @@ namespace Ships{
 
     Military_transport_ship::Military_transport_ship( std::string new_type, std::string name, double max_velocity,
                                                       double max_life, double cost, double max_cargo, double coef_decrease):
-            Transport_ship( new_type, name, max_velocity,max_life, cost,max_cargo,coef_decrease){}
+            Transport_ship( new_type, name, max_velocity,max_life, cost,max_cargo,coef_decrease),
+            Security_ship(new_type,name,max_velocity, max_life, cost), Ship(new_type,name,max_velocity, max_life, cost){}
 
 
     std::ostream &operator<<(std::ostream &s, const Military_transport_ship &ship){
