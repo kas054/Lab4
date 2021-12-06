@@ -88,18 +88,18 @@ TEST(constructor, initConstructor){
     }
 
     //Ships::Military_transport_ship d;
-    ASSERT_EQ(st, b.get_type());
-    ASSERT_EQ(st, b.get_name());
-    for (int i = 0; i < a.count_properties(); i ++)
+    ASSERT_EQ(st, d.get_type());
+    ASSERT_EQ(st, d.get_name());
+    for (int i = 0; i < d.count_properties(); i ++)
         if (i == 0 || i == 2 || i == 4)
-            ASSERT_EQ(number, a.get_property(i));
-        else ASSERT_EQ(0, a.get_property(i));
+            ASSERT_EQ(number, d.get_property(i));
+        else ASSERT_EQ(0, d.get_property(i));
     for (int i = 0; i < 4; i ++){
-        ASSERT_EQ(nullptr, c.get_info_armament(i) );
+        ASSERT_EQ(nullptr, d.get_info_armament(i) );
     }
-    for (int j = 0; j < b.get_size(); j ++){
-        if (j == 1) ASSERT_EQ(0, b.get_info_cargo(j));
-        else ASSERT_EQ(number, b.get_info_cargo(j));
+    for (int j = 0; j < d.get_size(); j ++){
+        if (j == 1) ASSERT_EQ(0, d.get_info_cargo(j));
+        else ASSERT_EQ(number, d.get_info_cargo(j));
     }
 }
 
