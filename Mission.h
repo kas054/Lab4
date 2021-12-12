@@ -17,9 +17,10 @@ namespace Menu {
         Basic::Capitan commander;
         Table <std::string, Info> *convoy;
         Table <std::string, Info> *pirates;
+        std::map<std::string, double> prop = {{"max money", 0}, {"spend money", 0}, {"full cargo", 0}, {"min cargo", 0},{"cur cargo", 0},
+                                         {"delivered cargo", 0},{"max count convoy", 0},{"map count pirates", 0}, {"size A", 0}, {"B", 0}};
         /* 0 - max_money, 1 - spend_money, 2 - full_cargo, 3 - min_cargo, 4 - cur_cargo,
           5 - delivered_cargo, 6 - max_count_ship_c, 7 - max_count_ship_p, 8 - size A, 9 - size B */
-        int properties[10] = {0};
         Basic::Coordinate coordinates_A = {0, 0};
         Basic::Coordinate coordinates_B = {0, 0};
         std::vector<Basic::Coordinate> coordinates_pirates;
@@ -27,17 +28,17 @@ namespace Menu {
     public:
         Mission() : convoy(nullptr), pirates(nullptr) {};
 
-        float p_count() const {return sizeof(properties) / sizeof(int);}
+        float p_count() const {return prop.size();}
 
-        double get_properties(int i) const { if (i < p_count()  && i >= 0) return properties[i]; else return 0;} // i - номер характеристики
+        double get_properties(std::string i) const;
 
-        void set_properties(int i, int new_value) { if (i < p_count()  && i >= 0) properties[i] = new_value; }
+        void set_properties(std::string i, int new_value) { if (prop.find(i) != prop.end()) prop[i] = new_value; }
 
        const Basic::Coordinate *get_coord_A_B(int i) const; // i == 0: A, i == 1: B
 
         void set_coord_A_B(int i, int x, int y);
 
-        void change_ship_property(int c_p, std::string name, int ship_property_index, double new_value); //c_p == 0: конвой, c_p == 1: пираты
+        void change_ship_property(int c_p, std::string name, std::string ship_property_index, double new_value); //c_p == 0: конвой, c_p == 1: пираты
 
         void change_name_ship(int c_p, std::string name, std::string new_name);
 
@@ -59,9 +60,11 @@ namespace Menu {
 
         void buy_armament(int c_p, std::string name, int place, std::string armament); // place- расположение оружия
 
-        void change_armament(int c_p, std::string name, int place, int property, int new_value, std::string type = "");
+        void change_armament(int c_p, std::string name, int place, std::string property, int new_value, std::string type = "");
 
         void sell_armament(int c_p, std::string name, int place);
+
+        void add_pirates_coordinate(double x, double y);
 
     };
 
