@@ -5,7 +5,7 @@
 #ifndef LAB4_3SEM_SHIP_H
 #define LAB4_3SEM_SHIP_H
 #include <utility>
-
+#include <map>
 #include "Armament.h"
 
 namespace Ships {
@@ -15,6 +15,7 @@ namespace Ships {
         std::string name;
         Basic::Capitan capitan;
         static const int properties_count = 5;
+        std::map<std::string, double> prop = {{"max velocity", 0}, {"cur velocity", 0}, {"max life",0}, {"cur life",0}, {"cost", 0}};
         double properties[properties_count] = {0}; // max_velocity - 0, cur_velocity - 1, max_life - 2, cur_life - 3, cost - 4
 
     public:
@@ -36,12 +37,19 @@ namespace Ships {
         virtual ~Ship() {};
 
         /**
+         * getter of properties map
+         * @return map prop
+         */
+
+      const std::map<std::string, double> *get_map_prop() const {return &prop;}
+
+        /**
          * getter of ship's property
          * @param i number of property
          * @return property[i]
          */
 
-        double get_property(int i) const;
+        double get_property(std::string i) const;
 
         /**
          * getter of ship's Capitan
@@ -77,7 +85,7 @@ namespace Ships {
          * @param new_value new value of property
          */
 
-        void change_property(int i, int new_value)  { if (i < properties_count  && i >= 0) properties[i] = new_value; }
+        void change_property(std::string i, int new_value)  { if (prop.find(i) != prop.end()) prop[i] = new_value; }
         /**
          * change type of ship
          * @param new_type new type of ship
@@ -111,13 +119,7 @@ namespace Ships {
          * @return current life
          */
 
-        double get_damage(double damage) {properties[3] -= damage; return properties[3];} //properties[3] - current life
-
-        /**
-         * print properties of ship
-         */
-
-        void print_properties() const;
+        double get_damage(double damage); //{properties[3] -= damage; return properties[3];} //properties[3] - current life
 
         /**
          * overload << for class Ship
@@ -251,7 +253,7 @@ namespace Ships {
          * @throw "Invalid place for armament"
          * @thro "No such place"
          */
-        void change_armament(int i, int property, double new_value, std::string type = ""); // номер оружия, свойство оружия, новое значение, тип оружия
+        void change_armament(int i, std::string property, double new_value, std::string type = ""); // номер оружия, свойство оружия, новое значение, тип оружия
 
         /**
          * get information about armament
