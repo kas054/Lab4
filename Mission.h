@@ -8,17 +8,22 @@
 #include <vector>
 #include <map>
 namespace Menu {
+
     using Pattern::Info;
     using Pattern::Table;
+
     class Mission {
+
+        friend class Manage;
         friend class Basic_config;
+
     private:
         class Basic_config *config;
         Basic::Capitan commander;
         Table <std::string, Info> *convoy;
         Table <std::string, Info> *pirates;
         std::map<std::string, double> prop = {{"max money", 0}, {"spend money", 0}, {"full cargo", 0}, {"min cargo", 0},{"cur cargo", 0},
-                                         {"delivered cargo", 0},{"max count convoy", 0},{"map count pirates", 0}, {"size A", 0}, {"B", 0}};
+                                         {"delivered cargo", 0},{"max count convoy", 0},{"max count pirates", 0}, {"size A", 0}, {"size B", 0}};
         /* 0 - max_money, 1 - spend_money, 2 - full_cargo, 3 - min_cargo, 4 - cur_cargo,
           5 - delivered_cargo, 6 - max_count_ship_c, 7 - max_count_ship_p, 8 - size A, 9 - size B */
         Basic::Coordinate coordinates_A = {0, 0};
@@ -66,6 +71,7 @@ namespace Menu {
 
         void add_pirates_coordinate(double x, double y);
 
+        void change_coord(int c_p, std::string name, double x, double y);
     };
 
     class Basic_config {
@@ -106,6 +112,37 @@ namespace Menu {
          * @param fd file name
          */
         void safe_table(FILE *fd, Menu::Table<std::string, Menu::Info> *tab);
+    };
+
+    class Manage{
+    private:
+       class Mission *mission = nullptr;
+    public:
+        Manage(Mission *m) {mission = m;}
+
+        Mission *get_mission() {return mission;}
+
+        void set_mission(Mission *m) {mission = m;}
+
+        void distribution_pirates();
+
+        void start_coord();
+
+        void update_status();
+
+        void move_convoy(std::string direction);
+
+        void move_pirates();
+
+        void lose_ship(int c_p, std::string name);
+
+        void check_cur_life();
+
+        void rich_base_B();
+
+        void pirates_shoot();
+
+        void convoy_shoot(std::vector<std::string> &convoy_ship, std::string pirate);
     };
 }
 #endif //LAB4_3SEM_MISSION_H
