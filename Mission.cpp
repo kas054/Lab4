@@ -8,6 +8,14 @@ using namespace Basic;
 namespace Menu{
     using namespace Pattern;
 
+    double Mission::get_properties(std::string i) const{
+        double answer;
+        std::map<std::string, double> :: const_iterator it = prop.find(i);
+        if (it == prop.end()) answer = 0;
+        else answer = it->second;
+        return answer;
+    }
+
     const Basic::Coordinate *Mission::get_coord_A_B(int i) const {
         const Basic::Coordinate *answer;
         if (i == 0) answer =  &coordinates_A;
@@ -29,7 +37,7 @@ namespace Menu{
     }
 
     // Изменение характеристик корабля по его названию
-    void Mission::change_ship_property(int c_p, std::string name, int ship_property_index, double new_value){
+    void Mission::change_ship_property(int c_p, std::string name, std::string ship_property_index, double new_value){
         Ships::Ship *cur_ship;
         switch(c_p) {
             case 0:
@@ -100,15 +108,15 @@ namespace Menu{
 
         new_ship = new Ships::Ship;
         *new_ship = it->second;
-        cost = new_ship->get_property(4);
+        cost = new_ship->get_property("cost");
 
         switch (c_p) {
             case 0: { // add ship to convoy
                 //max_money - spend_money > 0 && max_count_ship_c > current_size of convoy
-                if ((this->get_properties(0) - this->get_properties(1)) > 0 &&
-                    (this->get_properties(6) > convoy->get_count())) {
+                if ((this->get_properties("max money") - this->get_properties("spend money")) > 0 &&
+                    (this->get_properties("max count convoy") > convoy->get_count())) {
                     convoy->add_ship(new_ship, *get_coord_A_B(0)); // помещаем корабль на базу А
-                    this->set_properties(1, cost + this->get_properties(1)); // change spend_money
+                    this->set_properties("spend money", cost + this->get_properties("spend money")); // change spend_money
                 } else {
                     delete new_ship;
                     throw "You do not have money or free place in convoy";
@@ -116,8 +124,8 @@ namespace Menu{
             }
             case 1:{ // add pirates
                 // max_count_ship_p > current_size of pirates
-                if ((this->get_properties(7) > pirates->get_count()))
-                    convoy->add_ship(new_ship, *get_coord_A_B(1)); // помещаем корабль на базу B
+                if ((this->get_properties("max count pirates") > pirates->get_count()))
+                    convoy->add_ship(new_ship, *get_coord_A_B(0)); // помещаем корабль на базу A, потом корабли пиратов распределятся по координатам
                 else{
                     delete new_ship;
                     throw "Too many pirates";
@@ -133,8 +141,8 @@ namespace Menu{
 
         if (it == convoy->end()) throw "No such ship";
 
-        cost = (*it).info.ship->get_property(4);
-        this->set_properties(1, this->get_properties(1) - cost); // change spend_money
+        cost = (*it).info.ship->get_property("cost");
+        this->set_properties("spend money", this->get_properties("spend money") - cost); // change spend_money
         convoy->del_ship(name);
     }
 
@@ -175,7 +183,8 @@ namespace Menu{
         // max_cargo >= cur_cargo + weight
         if (cur_ship->get_info_cargo(0) >= cur_ship->get_info_cargo(1) + weight) {
             cur_ship->set_cur_cargo(weight);
-            this->properties[4] += weight; // cur_cargo += weight
+            set_properties("cur cargo", get_properties("cur cargo") + weight);
+            //this->properties[4] += weight; // cur_cargo += weight
         }
     }
 
@@ -207,25 +216,25 @@ namespace Menu{
             }
         }
 
-        cost = vec_it->get_property(5);
+        cost = vec_it->get_property("cost");
         //max_money - spend_money > 0
-        if ((c_p == 0 && ((this->get_properties(0) - this->get_properties(1)) > 0)) || c_p == 1) {
+        if ((c_p == 0 && ((this->get_properties("max money") - this->get_properties("spend money")) > 0)) || c_p == 1) {
             try {
                 cur_ship->add_armament(new_armament, place);
                 if (c_p == 0)
-                    this->set_properties(1, cost + this->get_properties(1)); // change spend_money
+                    this->set_properties("spend money", cost + this->get_properties("spend money")); // change spend_money
             }
             catch (const char *e) { // покупка невозможна
                 std::cout << *e << std::endl;
                 if (c_p == 0)
-                    this->set_properties(1, this->get_properties(1) - cost); // change spend_money
+                    this->set_properties("spend money", this->get_properties("spend money") - cost); // change spend_money
                 delete new_armament;
             }
         }
 
     }
 
-    void Mission::change_armament(int c_p, std::string name, int place, int property, int new_value, std::string type){
+    void Mission::change_armament(int c_p, std::string name, int place, std::string property, int new_value, std::string type){
         Table<std::string, Info> :: Iterator it;
         std::vector <Basic::Armament> :: iterator vec_it;
         Ships::Security_ship *cur_ship;
@@ -275,18 +284,22 @@ namespace Menu{
             std::cout << *e << std::endl;
         }
 
-        cost = cur_armament->get_property(5);
+        cost = cur_armament->get_property("cost");
 
         try {
             cur_ship->remove_armament(place);
             if (c_p == 0)
-                this->set_properties(1, this->get_properties(1) - cost); // change spend_money
+                this->set_properties("spend money", this->get_properties("spend money") - cost); // change spend_money
         }
         catch (const char *e) { // удаление невозможно
             std::cout << *e << std::endl;
             if (c_p == 0)
-                this->set_properties(1, this->get_properties(1) + cost); // change spend_money
+                this->set_properties("spend money", this->get_properties("spend money") + cost); // change spend_money
         }
     }
 
+    void Mission::add_pirates_coordinate(double x, double y){
+        Basic::Coordinate coord = {x,y};
+        coordinates_pirates.push_back(coord);
+    }
 }
